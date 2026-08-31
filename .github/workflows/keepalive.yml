@@ -21,7 +21,7 @@ on:
       duration:
         description: 'Duration per run in minutes (max 350, auto-chains)'
         required: false
-        default: '5'
+        default: '3'
         type: number
       cookie:
         description: 'Browser auth cookie (overrides secret)'
