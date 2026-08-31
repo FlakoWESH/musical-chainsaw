@@ -308,7 +308,7 @@ def parse_args():
     import argparse
     parser = argparse.ArgumentParser(description="Heartbeat keepalive for monkeycode-ai.com")
     parser.add_argument("--task-id", required=False,
-                        default=os.environ.get("TASK_ID"),
+                        default=os.environ.get("TASK_ID", ""),
                         help="Task ID for keepalive (or set TASK_ID env var)")
     parser.add_argument("--mode", choices=["ws", "poll", "dual"],
                         default=os.environ.get("MODE", "ws"),
