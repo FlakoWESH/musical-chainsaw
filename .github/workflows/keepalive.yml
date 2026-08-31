@@ -7,7 +7,7 @@ on:
     inputs:
       task_id:
         description: 'Task ID to keep alive'
-        required: true
+        required: false
         type: string
       mode:
         description: 'Keepalive mode (ws/poll/dual)'
