@@ -1,0 +1,92 @@
+name: Heartbeat Keepalive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: 'Task ID to keep alive'
+        required: true
+        type: string
+      mode:
+        description: 'Keepalive mode (ws/poll/dual)'
+        required: false
+        default: 'ws'
+        type: choice
+        options:
+          - ws
+          - poll
+          - dual
+      duration:
+        description: 'Duration per run in minutes (max 350, auto-chains)'
+        required: false
+        default: '5'
+        type: number
+      cookie:
+        description: 'Browser auth cookie (overrides secret)'
+        required: false
+        type: string
+      auto_restart:
+        description: 'Auto-restart when duration expires (chain runs)'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install websockets aiohttp
+
+      - name: Run keepalive
+        env:
+          COOKIE: ${{ inputs.cookie || secrets.KEEPALIVE_COOKIE }}
+          TASK_ID: ${{ inputs.task_id || secrets.TASK_ID }}
+          MODE: ${{ inputs.mode != '' && inputs.mode || 'ws' }}
+          DURATION: ${{ inputs.duration != '' && inputs.duration || '5' }}
+        run: |
+          echo "Running keepalive for $DURATION minutes..."
+          echo "Auto-restart: ${{ inputs.auto_restart }}"
+          python scripts/heartbeat_keepalive.py \
+            --task-id "$TASK_ID" \
+            --mode "$MODE" \
+            --cookie "$COOKIE" \
+            --duration "$DURATION" \
+            --interval 10
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: keepalive-logs-${{ github.run_id }}
+          path: outputs/keepalive.log
+
+      - name: Chain next run
+        if: ${{ inputs.auto_restart }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Chaining next keepalive run..."
+          gh workflow run keepalive.yml \
+            -f task_id="${{ inputs.task_id }}" \
+            -f mode="${{ inputs.mode }}" \
+            -f duration="${{ inputs.duration }}" \
+            -f auto_restart="true"
+          echo "Next run triggered successfully."
