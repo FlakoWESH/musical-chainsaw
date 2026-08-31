@@ -85,8 +85,9 @@ jobs:
         run: |
           echo "Chaining next keepalive run..."
           gh workflow run keepalive.yml \
-            -f task_id="${{ inputs.task_id }}" \
-            -f mode="${{ inputs.mode }}" \
-            -f duration="${{ inputs.duration }}" \
+            -f task_id="$TASK_ID" \
+            -f mode="$MODE" \
+            -f duration="$DURATION" \
+            -f cookie="$COOKIE" \
             -f auto_restart="true"
           echo "Next run triggered successfully."
