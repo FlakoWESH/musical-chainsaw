@@ -1,0 +1,27 @@
+# Large files
+monkeycode-ai.com.har
+*.har
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+
+# Logs
+outputs/keepalive.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+CLAUDE.md
+
+# Sensitive data (if any)
+.env
